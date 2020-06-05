@@ -7,6 +7,7 @@ import { LeafletMouseEvent } from 'leaflet';
 import './styles.css';
 import logo from '../../assets/logo.svg';
 import api from '../../services/api';
+import Dropzone from '../../components/Dropzone';
 
 // array ou objeto: manualmente informar o tipo (useState)
 
@@ -46,6 +47,7 @@ const CreatePoint = () => {
     const [selectedCity, setSelectedCity] = useState<string>('0');
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [selectedMapPosition, setSelectedMapPosition] = useState<[number, number]>([-23.6245327, -46.7025134]);
+    const [selectedFile, setSelectedFile] = useState<File>();
 
     const history = useHistory();
 
@@ -123,15 +125,19 @@ const CreatePoint = () => {
         const { name, email, whatsapp } = formData;
         const [latitude, longitude] = selectedMapPosition;
 
-        const data = {
-            name,
-            email,
-            whatsapp,
-            latitude,
-            longitude,
-            items: selectedItems,
-            city: selectedCity,
-            state: selectedState
+        const data = new FormData();
+
+        data.append('name', name);
+        data.append('email', email);
+        data.append('whatsapp', whatsapp);
+        data.append('latitude', String(latitude));
+        data.append('longitude', String(longitude));
+        data.append('items', selectedItems.join(','));
+        data.append('city', selectedCity);
+        data.append('state', selectedState);
+
+        if (selectedFile) {
+            data.append('image', selectedFile);
         }
 
         await api.post('points', data);
@@ -151,6 +157,8 @@ const CreatePoint = () => {
             </header>
             <form onSubmit={handleSubmit}>
                 <h1>Cadastro do <br /> ponto de coleta</h1>
+
+                <Dropzone onFileUploaded={setSelectedFile} />
 
                 <fieldset>
                     <legend>
